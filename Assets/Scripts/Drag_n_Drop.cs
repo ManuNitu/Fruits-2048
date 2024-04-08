@@ -26,12 +26,37 @@ public class Drag_n_Drop : MonoBehaviour
     private void Update()
     {
         if (UserInterface.paused || !sprite.enabled)
+        {
+            transform.position = startPos;
+            dragging = false;
             return;
+        }
 
-        if (Input.GetMouseButtonDown(0))
+        // Touch input
+        if (Input.touchCount > 0)
+        {
+            Touch touch = Input.GetTouch(0);
+            if (touch.phase == TouchPhase.Began)
+            {
+                if (EventSystem.current.IsPointerOverGameObject(touch.fingerId))
+                {
+                    return;
+                }
+                dragging = true;
+            }
+            else if (touch.phase == TouchPhase.Ended && dragging)
+            {
+                dragging = false;
+                DropFruit();
+            }
+        }
+        // Mouse input
+        else if (Input.GetMouseButtonDown(0))
         {
             if (EventSystem.current.IsPointerOverGameObject())
+            {
                 return;
+            }
             dragging = true;
         }
         else if (Input.GetMouseButtonUp(0) && dragging)
@@ -43,6 +68,7 @@ public class Drag_n_Drop : MonoBehaviour
         if (dragging && !onCooldown && !UserInterface.paused)
         {
             mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            //mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             mousePos.x = Mathf.Clamp(mousePos.x, -maxDistance, maxDistance);
             Vector2 dirr = mousePos - (Vector2)transform.position;
             dirr.y = 0f;
@@ -59,6 +85,7 @@ public class Drag_n_Drop : MonoBehaviour
     }
     void DropFruit()
     {
+        //Debug.Log("DROPED");
         Instantiate(Fruits[fruitIndex], transform.position, Quaternion.identity);
         StartCoroutine(GetRandomFruit(dropCooldown));
     }
